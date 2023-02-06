@@ -9,7 +9,6 @@ import {
   from,
   concatMap,
 } from "rxjs";
-import { observeNotification } from "rxjs/internal/Notification";
 
 //სავარჯიშო 1
 
