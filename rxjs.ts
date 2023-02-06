@@ -7,7 +7,9 @@ import {
   delay,
   concat,
   from,
+  concatMap,
 } from "rxjs";
+import { observeNotification } from "rxjs/internal/Notification";
 
 //სავარჯიშო 1
 
@@ -35,7 +37,15 @@ interface User {
   age: number;
 }
 
-const users: User[] = [
+function getUsers(...users: User[]): Observable<User[]> {
+  const final: User[] = [];
+  for (let user of users) {
+    final.push(user);
+  }
+  return of(final).pipe(delay(5000));
+}
+
+getUsers(
   {
     firstName: "giorgi",
     lastName: "bazerashvili",
@@ -50,29 +60,22 @@ const users: User[] = [
     firstName: "mesame",
     lastName: "giorgi3",
     age: 28,
-  },
-];
-
-function getUsers(users: User[]): Observable<string> {
-  return new Observable<string>((subscriber) => {
-    for (let i = 0; i < users.length; i++) {
-      if (users[i].age > 18) {
-        subscriber.next(
-          `${users[i].firstName} ${users[i].lastName}, ${users[i].age} years old`
-        );
-      }
-    }
-  }).pipe(delay(5000));
-}
+  }
+)
+  .pipe(
+    map((x) =>
+      x
+        .filter((x) => x.age > 18)
+        .map((x) => `${x.firstName} ${x.lastName}, ${x.age} years old`)
+    )
+  )
+  .subscribe((x) => console.log(x));
 
 // მეორე ვარიანტი
+// ამ შემთხვევაში მნიშვნელობებს აბრუნებს ცალკე სტრიმებად
 
-// function getUsers(users: User[]): Observable<string> {
-//   return from(users).pipe(
-//     filter((x) => x.age > 18),
-//     map((x) => `${x.firstName} ${x.lastName}, ${x.age} years old`),
-//     delay(5000)
-//   );
-// }
-
-getUsers(users).subscribe((x) => console.log(x));
+// .pipe(
+//   concatMap((x) => from(x)),
+//   filter((x) => x.age > 18),
+//   map((x) => `${x.firstName} ${x.lastName}, ${x.firstName} years old`)
+// )
